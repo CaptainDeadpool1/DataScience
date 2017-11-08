@@ -2,7 +2,7 @@
 title: "HW01"
 author: "Emanuele Alessi - IvanFerrante"
 date: "10/31/2017"
-output: html_document
+output: rmarkdown::github_document
 ---
 
 <h3><b>Exercise 01:</b></h3>
