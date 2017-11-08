@@ -1,0 +1,192 @@
+---
+title: "HW01"
+author: "Emanuele Alessi - IvanFerrante"
+date: "10/31/2017"
+output: html_document
+---
+
+<h3><b>Exercise 01:</b></h3>
+<br>We consider only the case of "busy" signal. Our assumptions are based on 3 cases:
+<br>1 - we only know the rome's prefix (06)
+<br>2 - we know the lenght of every phone number (9)
+<br>3 - to be more sure that the phone number we call is the our phone number, we call it in the night because we think that in the night there are less phone conversartions.
+
+With the above assumptions we can calculate the probability that the typed digits of the phone number correspond to the our number; <br>Formally:
+<br>$P("Exact\,number") = \frac{1}{10^7}$<br>
+and<br>
+$P("Not\,exact\,number") = 1 - \frac{1}{10^7}$
+
+<h3><b>Exercise 02:</b></h3>
+<br><b>First Variation:</b>
+<br>In this problem we made an R script that simulate this variation of "Tic-Tac-Toe".
+<br>In our simulations every player can do tris more than one time in a game because each cell of the matrix will be filled with an "X" or an "O" with $\frac{1}{2}$ of probability.<br>
+Thus, there are more possibilities of win because the number of "X" in the matrix not depends on the turn of the player but depends on the coin flip.<br>
+In the first variation we calculate only the probability of "X" wins.<br>
+
+```{r}
+n <- 9
+coin<-c(0.5,0.5)
+winnerX <- 0
+winnerO <- 0
+simulation <- 1000
+for (i in 1:simulation){
+  XO <- sample(c(1,0), n, replace = TRUE, coin)
+  Tris = matrix(
+  XO,
+  nrow=3,
+  ncol=3,
+  byrow = T
+)
+  x <- rowSums(Tris)
+  y <- colSums(Tris)
+  z <- sum(diag(Tris))
+  w <- sum(diag(Tris[nrow(Tris):1, ]))
+  
+  # Count only one win of X in one game
+  if (x[1]==3 | x[2]==3 | x[3]==3 | y[1]==3 | y[2]==3 | y[3]==3 | z==3 | w==3) { winnerX = winnerX + 1}
+  
+}
+
+paste('Probabilità di vittoria di X:', (winnerX/simulation) * 100, '%')
+```
+
+<br><b>Second Variation:</b>
+<br>Instead, in the second variation we calculate the number of wins for each player and the number of draws. In this case we simulate a real "Tic-Tac-Toe" game in which the turn is respected. Naturally, the choice of the empty cell, on which write "X" or "O", is randomic.
+<br>
+```{r}
+winnerO <- 0
+winnerX <- 0
+draw <- 0
+simulation <- 1000
+for (i in 1:simulation){
+  turno = 1
+  Tris = matrix(
+    0,
+    nrow = 3,
+    ncol = 3,
+    byrow = T
+  )
+  
+  for (i in 1:9){
+    won <- FALSE
+    k = sample(which(Tris==0))
+    Tris[k[1]] <- turno
+    
+    x <- rowSums(Tris)
+    y <- colSums(Tris)
+    z <- sum(diag(Tris))
+    w <- sum(diag(Tris[nrow(Tris):1, ]))
+    
+    # Count only one win of X in one game 
+    if (x[1]==3 | x[2]==3 | x[3]==3 | y[1]==3 | y[2]==3 | y[3]==3 | z==3 | w==3) { 
+      winnerX = winnerX + 1
+      won <- TRUE
+      break
+    }
+    # Count only one win of O in one game
+    if (x[1]==-3 | x[2]==-3 | x[3]==-3 | y[1]==-3 | y[2]==-3 | y[3]==-3 | z==-3 | w==-3) {
+      winnerO = winnerO + 1
+      won <- TRUE
+      break
+    }
+    
+    turno <- turno * -1
+  } 
+  if(won == FALSE) draw <- draw +1
+  
+}
+
+
+paste('Probabilità di vittoria di X:', (winnerX/simulation) * 100, '%')
+paste('Probabilità di vittoria di O:', (winnerO/simulation) * 100, '%')
+paste('Probabilità di pareggio:', (draw/simulation) * 100, '%')
+```
+
+
+<h3><b>Exercise 03:</b></h3>
+<br>Initially the probability of find the prize behind the door is $\frac{1}{3}$, but after the earthquake we know that behind the opened door there is not the prize, then in this case we have more possibilities to find the prize, the probability becomes ${\frac{1}{2}}$. 
+<br> Without earthquake, when Monty opens the door, that does not alter the probability that the prize was in the two doors not choosen. But when earthquake open one of the doors not choosen and show that the prize is not there, that does alter probability. The earthquake might have revelated the prize, but it didn't, so earthquake tell us is just that it's not behind that particular door. The prize is not behind that door but is equally likely to be behind either of the others.
+<br>To prove the probability we considered two events:<br><br>
+$A = "the\,contestant\,find\,the\,prize"$<br>
+$B = "the\,contestant\,change\,the\,door"$<br><br>
+then:<br><br>
+$P(A|B)=P(A|B^C)=P(A^C|B)=P(A^C|B^C)=\frac{1}{2}$
+
+<br>This script proof our hypothesis with a repetution simulation. In every game we simulate the earthquake.
+```{r}
+doors <- c("1","2","3")
+result = c()
+for (i in 1:100)
+{
+  prize<-sample(doors[which(doors!="3")])[1] 
+  pick<-sample(doors[which(doors=="1")])[1] 
+  open<-sample(doors[which(doors=="3")])[1] #Like a earthquake
+  switchD<-doors[which(doors != pick & doors!=open)]
+  if(pick==prize) {
+    result = c(result,"NOSwitch_Win")
+  }
+  if(switchD==prize){
+    result = c(result, "Switch_Win")
+  }
+}
+
+length(which(result == "NOSwitch_Win")) #Count game in which No Switch win
+length(which(result == "Switch_Win"))   #Count game in which Switch win
+```
+
+<h3><b>Exercise 04:</b></h3>
+<br><b>4.1</b> 
+<br>$D(x)=\begin{cases} 2x & \text{for } x\leq \frac{1}{2}\\ 2(1-x) & \text{for } x> \frac{1}{2}\\ \end{cases}$ <br>
+<br> $D(u)=\begin{cases} 2u & \text{for } u \leq \frac{1}{2}\\ 2(1-u) & \text{for } u> \frac{1}{2}\\ \end{cases}$
+
+<br> We know that $U \sim Unif(0,1)$, so we want to proof that $X=D(U) \sim Unif(0,1)$<br>
+<br> We start recall that $CDF$ of  U is $F(U)= \begin{cases}0 & \text{for } u\leq0 \\ u & \text{for } 0\leq u\leq 1 \\ 1 & \text{for } u>1  \end{cases}$
+
+<br> $P(X\leq x)= P(2u \leq x \,|\, u\leq \frac{1}{2})P(u\leq \frac{1}{2}) \cup P(2(1-u) \leq x \,|\, u> \frac{1}{2})P(u> \frac{1}{2})$<br>
+<br> Thus, for the conditionally probability we have:<br>
+<br> $P(X\leq x) = \frac{P(2u \leq x \,|\, u\leq \frac{1}{2})P(u\leq \frac{1}{2})}{P(u\leq \frac{1}{2})} + \frac{P(2(1-u) \leq x \,|\, u> \frac{1}{2})P(u> \frac{1}{2})}{P(u> \frac{1}{2})} =$<br>
+<br>$= P(2u \leq x \,|\, u\leq \frac{1}{2}) + P(2(1-u) \leq x \,|\, u> \frac{1}{2}) =$<br>
+<br>$= P(u \leq \frac{x}{2})+P(u> -\frac{x}{2}+1) =$<br>
+<br>$=F_u(\frac{x}{2})+ 1-F_u(-\frac{x}{2}+1) =$<br>
+<br>$=\frac{x}{2}+1-1+\frac{x}{2}= \frac{2x}{2} = x$<br>
+<br>So $x \sim Unif(0,1)$<br> $\square$ <br>
+
+<br><b>4.2</b>
+<br> This script generate $100\,$ random variable that respect the propierties:<br>
+<br> $X_{n+1} = D(X_n)$ <br> 
+```{r}
+x <- runif(1, 0, 1)
+
+tent <- function(u){
+  vec <- c(u)
+  for(i in 2:100){
+    if (vec[i-1]<=0.5) vec <- c(vec, (2*vec[i-1]))
+    else vec <- c(vec, (2*(1-vec[i-1])))
+  }
+  return(vec)
+}
+
+plot((1:100)/100 , tent(x), type = "l", col='chartreuse4', xlab = "x", ylab = "tent(x)")
+
+```
+
+<br><b>4.3</b><br>
+To test what happens if the initial value is less than $\frac{1}{2}$, we have modified the script in <b>4.2</b> in this way:
+```{r}
+k <- 5
+x <- c(1/2^k) #initial value (< 1/2)
+
+tent <- function(u){
+  vec <- c(u)
+  for(i in 2:100){
+    if (vec[i-1]<=0.5) vec <- c(vec, (2*vec[i-1]))
+    else vec <- c(vec, (2*(1-vec[i-1])))
+  }
+  return(vec)
+}
+
+plot((1:100)/100 , tent(x), type = "l", col='red', xlab = "x", ylab = "tent(x)")
+```
+
+The sequence has a desiderable behavior because if we start from a value equal to $\frac{1}{2^k}$ where $k > 0$, the sequence in first $k$ steps increases of $2x$ until $X_n = 1$, at this point $X_{n+1} = 0$ because it applied the second case of the funcion ($2(1-x)$). Thus, the next values of the sequence are all $0$.
+
